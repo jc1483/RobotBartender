@@ -1,8 +1,4 @@
-import gaugette.ssd1306
-import gaugette.platform
-import gaugette.gpio
 import time
-import sys
 import RPi.GPIO as GPIO
 import json
 import threading
@@ -25,7 +21,8 @@ UP_PIN_BOUNCE = 1000
 DOWN_BTN_PIN = 5
 DOWN_PIN_BOUNCE = 2000
 
-FLOW_RATE = 60.0/100.0 #oz per second
+FLOW_RATE = 60.0/100.0  # oz per second
+
 
 class Bartender(MenuDelegate):
 	def __init__(self):
@@ -236,8 +233,9 @@ class Bartender(MenuDelegate):
 		try:
 			while True:
 				time.sleep(0.1)
+		except KeyboardInterrupt:
+			print("keypress")
 
-		except KeyboardInterrupt
 
 	def iceCheck(self, drink):
 		i = Menu("Add Ice")
@@ -250,8 +248,8 @@ class Bartender(MenuDelegate):
 		try:
 			while True:
 				time.sleep(0.1)
-
-		except KeyboardInterrupt
+		except KeyboardInterrupt:
+			print("keypress")
 
 	def addCheck(self, drink):
 		a = Menu("Additions")
@@ -264,8 +262,8 @@ class Bartender(MenuDelegate):
 		try:
 			while True:
 				time.sleep(0.1)
-
-		except KeyboardInterrupt
+		except KeyboardInterrupt:
+			print("keypress")
 
 	def strengthSelect(self, ingredients):
 		str = Menu("Strength")
@@ -281,8 +279,8 @@ class Bartender(MenuDelegate):
 		try:
 			while True:
 				time.sleep(0.1)
-
-		except KeyboardInterrupt
+		except KeyboardInterrupt:
+			print("keypress")
 
 		strength = self.menuContext.getSelection()
 
@@ -300,7 +298,7 @@ class Bartender(MenuDelegate):
 
 		for idx, ing in newIngredients:
 			for i in drink_options:
-				if (ing.key == i.value && i.alcohol == 1):
+				if (ing.key == i.value and i.alcohol == 1):
 					newIngredients[idx] = ing * alcModifier
 				else:
 					newIngredients[idx] = ing * nonAlcModifier
@@ -319,8 +317,8 @@ class Bartender(MenuDelegate):
 		try:
 			while True:
 				time.sleep(0.1)
-
-		except KeyboardInterrupt
+		except KeyboardInterrupt:
+			print("keypress")
 
 		sizeOpt = self.menuContext.getSelection().name
 		size = 0
@@ -397,7 +395,7 @@ class Bartender(MenuDelegate):
 			self.addCheck(drink)
 
 		# show the main menu
-		self.menuContext.setMenu(m)
+		self.menuContext.retreat()
 		self.menuContext.showMenu()
 
 		# sleep for a couple seconds to make sure the interrupts don't get triggered

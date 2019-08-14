@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#--------------------------------------
+# --------------------------------------
 #    ___  ___  _ ____
 #   / _ \/ _ \(_) __/__  __ __
 #  / , _/ ___/ /\ \/ _ \/ // /
@@ -20,7 +20,7 @@
 #
 # https://www.raspberrypi-spy.co.uk/
 #
-#--------------------------------------
+# --------------------------------------
 
 # The wiring for the LCD is as follows:
 # 1 : GND
@@ -40,13 +40,13 @@
 # 15: LCD Backlight +5V**
 # 16: LCD Backlight GND
 
-#import
+# import
 import RPi.GPIO as GPIO
 import time
 
 # Define GPIO to LCD mapping
 LCD_RS = 23
-LCD_E  = 24
+LCD_E = 24
 LCD_D0 = 2
 LCD_D1 = 4
 LCD_D2 = 3
@@ -111,14 +111,15 @@ LCD_E_DISABLE = False
 E_PULSE = 0.0005
 E_DELAY = 0.0005
 
+
 def main():
     # Main program block
 
     GPIO.setmode(GPIO.BCM)       # Use BCM GPIO numbers
     GPIO.setup(LCD_E, GPIO.OUT)  # E
-    GPIO.setup(LCD_RS, GPIO.OUT) # RS
+    GPIO.setup(LCD_RS, GPIO.OUT)  # RS
     for pin in LCD_DATA_PINS:
-        GPIO.setup(pin, GPIO.OUT) # DBx
+        GPIO.setup(pin, GPIO.OUT)  # DBx
 
     # Initialise display
     lcd_init()
@@ -126,38 +127,50 @@ def main():
     while True:
 
         # Send some centred test
-        lcd_string("--------------------",LCD_LINE_1, CENTERED)
-        lcd_string("Rasbperry Pi",LCD_LINE_2, RIGHT_JUSTIFIED)
-        lcd_string("Model B",LCD_LINE_3, RIGHT_JUSTIFIED)
-        lcd_string("--------------------",LCD_LINE_4, CENTERED)
+        lcd_string("--------------------", LCD_LINE_1, CENTERED)
+        lcd_string("Rasbperry Pi", LCD_LINE_2, RIGHT_JUSTIFIED)
+        lcd_string("Model B", LCD_LINE_3, RIGHT_JUSTIFIED)
+        lcd_string("--------------------", LCD_LINE_4, CENTERED)
 
-        time.sleep(3) # 3 second delay
+        time.sleep(3)  # 3 second delay
 
-        lcd_string("Raspberrypi-spy",LCD_LINE_1, LEFT_JUSTIFIED)
-        lcd_string(".co.uk",LCD_LINE_2, LEFT_JUSTIFIED)
-        lcd_string("",LCD_LINE_3, LEFT_JUSTIFIED)
-        lcd_string("20x4 LCD Module Test",LCD_LINE_4,LEFT_JUSTIFIED)
+        lcd_string("Raspberrypi-spy", LCD_LINE_1, LEFT_JUSTIFIED)
+        lcd_string(".co.uk", LCD_LINE_2, LEFT_JUSTIFIED)
+        lcd_string("", LCD_LINE_3, LEFT_JUSTIFIED)
+        lcd_string("20x4 LCD Module Test", LCD_LINE_4, LEFT_JUSTIFIED)
 
-        time.sleep(3) # 20 second delay
+        time.sleep(3)  # 20 second delay
 
         # Blank display
-        lcd_byte(LCD_BLANK, LCD_CMD)
+        lcd_byte(LCD_BLANK, LCD_RS_CMD)
 
-        time.sleep(3) # 3 second delay
+        time.sleep(3)  # 3 second delay
+
 
 def lcd_init():
     # Initialise display
-    lcd_byte(0x33,LCD_CMD) # 00110011 Initialise
-    lcd_byte(0x32,LCD_CMD) # 00110010 Initialise
-    lcd_byte(0x06,LCD_CMD) # 00000110 Cursor move direction
-    lcd_byte(0x0C,LCD_CMD) # 00001100 Display On,Cursor Off, Blink Off
-    lcd_byte(0x28,LCD_CMD) # 00101000 Data length, number of lines, font size
-    lcd_byte(0x01,LCD_CMD) # 00000001 Clear display
-    time.sleep(E_DELAY)
+    lcd_byte(LCD_BLANK, LCD_RS_CMD)  # Blank the LCD
+    lcd_byte(LCD_RETURN, LCD_RS_CMD)  # Return cursor to home
+    lcd_byte(
+        LCD_CURSOR  # Select cursor options
+        | CURSOR_LEFT,  # Set cursor motion to right to left
+        LCD_RS_CMD)  # 00000110 Cursor move direction
+    lcd_byte(
+        LCD_DISPLAY  # Select display options
+        | DISPLAY_ON  # Turn display on
+        | DISPLAY_CURSOR_ON  # Turn cursor on
+        | DISPLAY_CURSOR_SOLID,  # Turn cursor blink off
+        LCD_RS_CMD  # Send byte as command
+        )
+    lcd_byte(
+        LCD_FUNCTION_SET  # Select function
+        | FUNCTION_8_BIT  # Set MPL mode to 8 bit
+        | FUNCTION_5X11_FONT  # Set font to 5x11 dots
+        | FUNCTION_1_LINE_DISPLAY,  # Set MPL to single line format
+        LCD_RS_CMD  # Send byte as command
+        )
+    lcd_byte(LCD_BLANK, LCD_RS_CMD)  # 00000001 Clear display
 
-def lcd_blank():
-    # Send Black command to LCD
-    lcd_byte(LCD_BLANK, LCD_CMD)
 
 def lcd_byte(bits, mode):
     # Send byte to data pins
@@ -165,10 +178,11 @@ def lcd_byte(bits, mode):
     # mode = True  for character
     #        False for command
 
-    GPIO.output(LCD_RS, mode) # RS
-    for pin,bit in LCD_DATA_PINS:
+    GPIO.output(LCD_RS, mode)  # RS
+    for pin, bit in LCD_DATA_PINS:
         GPIO.output(pin, get_bit(bit))
     pulse_enable()
+
 
 def pulse_enable():
     # Pulse the enable pin
@@ -178,25 +192,28 @@ def pulse_enable():
     GPIO.output(LCD_E, LCD_E_DISABLE)
     time.sleep(E_DELAY)
 
+
 def get_bit(bits, index):
     # get the index'th bit of
     # the passed bits
 
     return bits & (1 << index) and 1 or 0
 
-def lcd_string(message, line, style = LEFT_JUSTIFIED):
-    # send as many bits as can fit on a line
-    
-    lcd_byte(line | LCD_SET_DDRAM, LCD_CMD)
 
-    if (style == RIGHT_JUSTIFIED && len(line) < LCD_WIDTH):
+def lcd_string(message, line, style=LEFT_JUSTIFIED):
+    # send as many bits as can fit on a line
+
+    lcd_byte(line | LCD_SET_DDRAM, LCD_RS_CMD)
+
+    if ((style == RIGHT_JUSTIFIED) and (len(message) < LCD_WIDTH)):
         for i in range(LCD_WIDTH - len(line)):
-            lcd_byte(0,LCD_CHR)
-    elif (style == CENTERED && len(line) < LCD_WIDTH):
-        for i in range((LCD_WIDTH - len(line) / 2):
-            lcd_byte(0,LCD_CHR)
+            lcd_byte(0, LCD_RS_CHR)
+    elif (style == CENTERED and len(line) < LCD_WIDTH):
+        for i in range((LCD_WIDTH - len(line)) / 2):
+            lcd_byte(0, LCD_RS_CHR)
     for i in range(LCD_WIDTH):
-        lcd_byte(ord(message[i]),LCD_CHR)
+        lcd_byte(ord(message[i]), LCD_RS_CHR)
+
 
 if __name__ == '__main__':
 
@@ -205,6 +222,6 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         pass
     finally:
-        lcd_byte(LCD_BLANK, LCD_CMD)
-        lcd_string("Goodbye!",LCD_LINE_1,RIGHT_JUSTIFIED)
+        lcd_byte(LCD_BLANK, LCD_RS_CMD)
+        lcd_string("Goodbye!", LCD_LINE_1, RIGHT_JUSTIFIED)
         GPIO.cleanup()
