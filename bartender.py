@@ -366,11 +366,11 @@ class Bartender(MenuDelegate):
         if size == "shot":
             size = 1.25
         else:
-            size = int(size)
+            size = float(size)
         print("Size = " + str(size) + " oz")
         strength = self.drink_attributes["strength"]
         print("Strength: " + str(strength))
-        alcModifier = 1
+        alcModifier = 1.0
 
         if (strength == "strong"):
             alcModifier = 1.3
@@ -378,13 +378,14 @@ class Bartender(MenuDelegate):
             alcModifier = 0.7
 
         # strength calculations
-        totalIngredients = 0
+        totalIngredients = 0.0
         for ing in ingredients:
             totalIngredients += ingredients[ing]
             for opts in drink_options:
                 if (ing == opts["value"]
                         and opts["alcohol"] == 1):
-                    ingredients.update({ing: ingredients[ing] * alcModifier})
+                    ingredients.update(
+                        {ing: ingredients[ing] * 1.00 * alcModifier})
 
         print("Total parts: " + str(totalIngredients))
 
@@ -394,13 +395,14 @@ class Bartender(MenuDelegate):
                 {ing: ingredients[ing] * size / totalIngredients})
             print(str(ingredients[ing]) + " oz of " + str(ing))
 
-        maxTime = 0
+        maxTime = 0.00
         pumpThreads = []
 
         for ing in ingredients.keys():
             for pump in self.pump_configuration.keys():
                 if ing == self.pump_configuration[pump]["value"]:
-                    waitTime = ingredients[ing] / FLOW_RATE  # oz/(oz/sec)=sec
+                    waitTime = (ingredients[ing] * 1.00) / FLOW_RATE
+                    # oz/(oz/sec)=sec
                     if (waitTime > maxTime):
                         maxTime = waitTime
                     pump_t = threading.Thread(
