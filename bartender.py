@@ -22,7 +22,7 @@ UP_PIN_BOUNCE = 500
 DOWN_BTN_PIN = 20
 DOWN_PIN_BOUNCE = 500
 
-FLOW_RATE = 60.0/100.0  # oz per second
+FLOW_RATE = 0.056/1.0  # oz per second
 
 
 class Bartender(MenuDelegate):
