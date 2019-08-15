@@ -453,6 +453,7 @@ class Bartender(MenuDelegate):
             self.menuContext.setMenu(self.mainMenu)
 
         self.drink_attributes = {}
+        self.menuContext.showMenu()
 
     def down_btn(self, ctx):
         if not self.running:
