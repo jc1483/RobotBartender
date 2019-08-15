@@ -108,8 +108,8 @@ LCD_E_ENABLE = True
 LCD_E_DISABLE = False
 
 # Timing constants
-E_PULSE = 0.0005
-E_DELAY = 0.0005
+E_PULSE = 0.0001
+E_DELAY = 0.0001
 
 
 def lcd_blank():
@@ -147,7 +147,6 @@ def lcd_init():
         LCD_RS_CMD  # Send byte as command
         )
     lcd_byte(LCD_BLANK, LCD_RS_CMD)  # Blank the LCD
-    lcd_byte(LCD_RETURN, LCD_RS_CMD)  # Return cursor to home
 
 
 def lcd_byte(bits, mode):
@@ -156,28 +155,18 @@ def lcd_byte(bits, mode):
     # mode = True  for character
     #        False for command
 
-    time.sleep(E_DELAY)
     reset_pins()
-    time.sleep(E_DELAY)
     GPIO.output(LCD_RS, mode)  # RS
-    time.sleep(E_DELAY)
     for index, pin in enumerate(LCD_DATA_PINS):
         GPIO.output(pin, get_bit(bits, index))
-        time.sleep(E_DELAY)
     pulse_enable()
-    time.sleep(E_DELAY)
     reset_pins()
-    time.sleep(E_DELAY)
 
 
 def reset_pins():
     for pin in LCD_DATA_PINS:
         time.sleep(E_DELAY)
         GPIO.output(pin, 0)
-    time.sleep(E_DELAY)
-    GPIO.output(LCD_E, 0)
-    time.sleep(E_DELAY)
-    GPIO.output(LCD_RS, 0)
     time.sleep(E_DELAY)
 
 
