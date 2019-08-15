@@ -57,9 +57,9 @@ LCD_D6 = 15
 LCD_D7 = 25
 
 LCD_DATA_PINS = [
-    LCD_D0, LCD_D1, LCD_D2,
-    LCD_D3, LCD_D4, LCD_D5,
-    LCD_D6, LCD_D7
+    LCD_D7, LCD_D6, LCD_D5,
+    LCD_D4, LCD_D3, LCD_D2,
+    LCD_D1, LCD_D0
     ]
 
 # Define LCD commands (2004A)
@@ -153,7 +153,7 @@ def lcd_init():
     lcd_byte(LCD_RETURN, LCD_RS_CMD)  # Return cursor to home
     lcd_byte(
         LCD_CURSOR  # Select cursor options
-        | CURSOR_LEFT,  # Set cursor motion to right to left
+        | CURSOR_RIGHT,  # Set cursor motion to right to left
         LCD_RS_CMD)  # 00000110 Cursor move direction
     lcd_byte(
         LCD_DISPLAY  # Select display options
@@ -178,10 +178,29 @@ def lcd_byte(bits, mode):
     # mode = True  for character
     #        False for command
 
+    time.sleep(E_DELAY)
+    reset_pins()
+    time.sleep(E_DELAY)
     GPIO.output(LCD_RS, mode)  # RS
-    for pin, bit in LCD_DATA_PINS:
-        GPIO.output(pin, get_bit(bit))
+    time.sleep(E_DELAY)
+    for index, pin in enumerate(LCD_DATA_PINS):
+        GPIO.output(pin, get_bit(bits, index))
+        time.sleep(E_DELAY)
     pulse_enable()
+    time.sleep(E_DELAY)
+    reset_pins()
+    time.sleep(E_DELAY)
+
+
+def reset_pins():
+    for pin in LCD_DATA_PINS:
+        time.sleep(E_DELAY)
+        GPIO.output(pin, 0)
+    time.sleep(E_DELAY)
+    GPIO.output(LCD_E, 0)
+    time.sleep(E_DELAY)
+    GPIO.output(LCD_RS, 0)
+    time.sleep(E_DELAY)
 
 
 def pulse_enable():
@@ -206,12 +225,12 @@ def lcd_string(message, line, style=LEFT_JUSTIFIED):
     lcd_byte(line | LCD_SET_DDRAM, LCD_RS_CMD)
 
     if ((style == RIGHT_JUSTIFIED) and (len(message) < LCD_WIDTH)):
-        for i in range(LCD_WIDTH - len(line)):
+        for i in range(LCD_WIDTH - len(message)):
             lcd_byte(0, LCD_RS_CHR)
     elif (style == CENTERED and len(line) < LCD_WIDTH):
-        for i in range((LCD_WIDTH - len(line)) / 2):
+        for i in range((LCD_WIDTH - len(message)) / 2):
             lcd_byte(0, LCD_RS_CHR)
-    for i in range(LCD_WIDTH):
+    for i in range(min(LCD_WIDTH, len(message))):
         lcd_byte(ord(message[i]), LCD_RS_CHR)
 
 

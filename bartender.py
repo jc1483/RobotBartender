@@ -296,7 +296,7 @@ class Bartender(MenuDelegate):
 		else:
 			return True
 
-		for idx, ing in newIngredients:
+		for idx, ing in enumerate(newIngredients):
 			for i in drink_options:
 				if (ing.key == i.value and i.alcohol == 1):
 					newIngredients[idx] = ing * alcModifier
