@@ -11,16 +11,16 @@ from drinks import drink_list, drink_options
 GPIO.setmode(GPIO.BCM)
 
 LEFT_BTN_PIN = 12
-LEFT_PIN_BOUNCE = 1000
+LEFT_PIN_BOUNCE = 500
 
 RIGHT_BTN_PIN = 16
-RIGHT_PIN_BOUNCE = 1000
+RIGHT_PIN_BOUNCE = 500
 
 UP_BTN_PIN = 21
-UP_PIN_BOUNCE = 1000
+UP_PIN_BOUNCE = 500
 
 DOWN_BTN_PIN = 20
-DOWN_PIN_BOUNCE = 1000
+DOWN_PIN_BOUNCE = 500
 
 FLOW_RATE = 60.0/100.0  # oz per second
 
@@ -361,7 +361,7 @@ class Bartender(MenuDelegate):
     def pourDrink(self, drinkAttributes):
         self.running = True
         ingredients = drinkAttributes["ingredients"].copy()
-        print("Ingredients: " + ingredients)
+        print("Ingredients: " + str(ingredients.keys()))
         size = self.drink_attributes["size"].split()[0]
         if size == "shot":
             size = 1.25
