@@ -16,6 +16,20 @@ class MenuItem(object):
         self.visible = visible
 
 
+class MenuLink(object):
+    def __init__(self, name, parent, child=None):
+        self.type = "menuLink"
+        self.name = name
+        self.parent = parent
+        self.child = child
+
+    def setParent(self, menu):
+        self.parent = menu
+
+    def setChild(self, menu):
+        self.child = menu
+
+
 class Menu(object):
     def __init__(self, name):
         self.type = "menu"

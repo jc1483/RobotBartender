@@ -5,7 +5,7 @@ import threading
 import traceback
 import lcd as LCD
 
-from menu import MenuItem, Menu, MenuContext, MenuDelegate
+from menu import MenuItem, MenuLink, Menu, MenuContext, MenuDelegate
 from drinks import drink_list, drink_options
 
 GPIO.setmode(GPIO.BCM)
@@ -27,6 +27,12 @@ FLOW_RATE = 60.0/100.0  # oz per second
 
 class Bartender(MenuDelegate):
     def __init__(self):
+
+        # initialize drink attributes
+        self.drink_attributes = []
+
+        # initialize main menu
+        self.mainMenu = None
 
         # allow button press
         self.running = False
@@ -159,6 +165,9 @@ class Bartender(MenuDelegate):
         # create a menu context
         self.menuContext = MenuContext(m, self)
 
+    def setMainMenu(self, menu):
+        self.mainMenu = menu
+
     def filterDrinks(self, menu):
         """
         Removes any drinks that can't be handled by the pump configuration
@@ -188,11 +197,18 @@ class Bartender(MenuDelegate):
             Bartender.writePumpConfiguration(self.pump_configuration)
             self.menuContext.retreat()
             return True
-        elif(menuItem.type == "check"):
+        elif(menuItem.type == "pour"):
+            self.pourDrink(menuItem.drink)
             return True
         elif(menuItem.type == "clean"):
             self.clean()
             return True
+        elif(menuItem.type == "menu_link"):
+            if (menuItem.child is not None):
+                self.drink_attributes += menuItem.attributes
+                self.menuContext.currentMenu = menuItem.child
+                self.menuContext.showMenu()
+                return True
         return False
 
     def clean(self):
@@ -232,116 +248,6 @@ class Bartender(MenuDelegate):
         # self.startInterrupts()
         self.running = False
 
-    def strongCheck(self):
-        s = Menu("This drink is strong")
-        s.addOption(MenuItem('check', "continue"))
-        s.setParent(self.menuContext.getCurrentMenu())
-        self.menuContext.setMenu(s)
-        self.menuContext.showMenu()
-        try:
-            while True:
-                time.sleep(0.1)
-        except KeyboardInterrupt:
-            print("keypress")
-
-    def iceCheck(self):
-        i = Menu("Add Ice")
-        i.addOption(MenuItem('check', "continue"))
-        i.setParent(self.menuContext.getCurrentMenu())
-        self.menuContext.setMenu(i)
-        self.menuContext.showMenu()
-        try:
-            while True:
-                time.sleep(0.1)
-        except KeyboardInterrupt:
-            print("keypress")
-
-    def addCheck(self, drink):
-        a = Menu("Just add " + drink.attributes["add"] + "!")
-        a.addOption(MenuItem('check', "done"))
-        a.setParent(self.menuContext.getCurrentMenu())
-        self.menuContext.setMenu(a)
-        self.menuContext.showMenu()
-        try:
-            while True:
-                time.sleep(0.1)
-        except KeyboardInterrupt:
-            print("keypress")
-
-    def strengthSelect(self, ingredients):
-        str = Menu("Strength")
-        str.addOption(MenuItem('check', "Weaker"))
-        str.addOption(MenuItem('check', "Normal"))
-        str.addOption(MenuItem('check', "Stronger"))
-        str.setParent(self.menuContext.getCurrentMenu())
-        self.menuContext.setMenu(str)
-        self.menuContext.showMenu()
-
-        newIngredients = ingredients.copy()
-
-        try:
-            while True:
-                time.sleep(0.1)
-        except KeyboardInterrupt:
-            print("keypress")
-
-        strength = self.menuContext.getSelection()
-
-        alcModifier = 1
-        nonAlcModifier = 1
-
-        if (strength.name == "Weaker"):
-            alcModifier = 0.8
-            nonAlcModifier = 1.2
-        elif (strength.name == "Stronger"):
-            alcModifier = 1.2
-            nonAlcModifier = 0.8
-        else:
-            return True
-
-        for idx, ing in enumerate(newIngredients):
-            for i in drink_options:
-                if (ing.key == i.value and i.alcohol == 1):
-                    newIngredients[idx] = ing * alcModifier
-                else:
-                    newIngredients[idx] = ing * nonAlcModifier
-        return newIngredients
-
-    def sizeSelect(self, ingredients):
-        sizeM = Menu("Size Select")
-        sizeM.addOption(MenuItem('check', "Shot"))
-        sizeM.addOption(MenuItem('check', "4 oz"))
-        sizeM.addOption(MenuItem('check', "6 oz"))
-        sizeM.addOption(MenuItem('check', "8 oz"))
-        sizeM.addOption(MenuItem('check', "10 oz"))
-        sizeM.setParent(self.menuContext.getCurrentMenu())
-        self.menuContext.setMenu(sizeM)
-        self.menuContext.showMenu()
-
-        try:
-            while True:
-                time.sleep(0.1)
-        except KeyboardInterrupt:
-            print("keypress")
-
-        sizeOpt = self.menuContext.getSelection().name
-        size = 0
-
-        if (sizeOpt == "shot"):
-            size = 1.5
-        else:
-            size = int(sizeOpt.split()[0])
-
-        newIngredients = ingredients.copy()
-        totalParts = 0
-
-        for ing in ingredients:
-            totalParts += ing
-            for idx, ing in newIngredients:
-                newIngredients[idx] = (ing / totalParts) * size
-
-        return newIngredients
-
     def pour(self, pin, waitTime):
         GPIO.output(pin, GPIO.LOW)
         time.sleep(waitTime)
@@ -361,20 +267,91 @@ class Bartender(MenuDelegate):
         # self.stopInterrupts()
         self.running = True
 
-        # Parse the drink ingredients and spawn threads for pumps
-        maxTime = 0
-        pumpThreads = []
+        # Check for strength
+        if (drink.attributes["strong"] == 1):
+            strengthCheck = Menu("This drink is strong")
+            strengthCheck.addOption(MenuLink(
+                "Continue", strengthCheck, {"strength": "normal"}))
+            strengthCheck.setParent(self.menuContext.currentMenu)
+            self.menuContext.setMenu(strengthCheck)
+        else:
+            # Select strength
+            strengthSelect = Menu("Select strength")
+            strengthSelect.addOption(MenuLink(
+                "Weak", strengthSelect, {"strength": "weak"}))
+            strengthSelect.addOption(MenuLink(
+                "Normal", strengthSelect), {"strength": "normal"})
+            strengthSelect.addOption(MenuLink(
+                "Strong", strengthSelect, None, {"strength": "strong"}))
+            strengthSelect.setParent(self.menuContext.currentMenu)
+            self.menuContext.setMenu(strengthSelect)
+        # Select size
+        # create a size menu and point it back to strengthCheck or
+        # strengthSelect
+        sizeSelect = Menu("Select size")
+        sizeSelect.setParent(self.menuContext.currentMenu)
+        # add size options menus to strengthCheck and strengthSelect
+        sizeSelect.addOption(MenuLink(
+            "Shot", sizeSelect, None, {"size": "shot"}))
+        sizeSelect.addOption(MenuLink(
+            "4 oz", sizeSelect, None, {"size": "4 oz"}))
+        sizeSelect.addOption(MenuLink(
+            "6 oz", sizeSelect, None, {"size": "6 oz"}))
+        sizeSelect.addOption(MenuLink(
+            "8 oz", sizeSelect, None, {"size": "8 oz"}))
+        sizeSelect.addOption(MenuLink(
+            "10 oz", sizeSelect, None, {"size": "10 oz"}))
+        sizeSelect.addOption(MenuLink(
+            "12 oz", sizeSelect, None, {"size": "12 oz"}))
+
+        # pour menu
+        pour = Menu("Ready to pour?")
+        pour.addOption(MenuItem("pour", "Continue", drink))
+
+        # add ice
+        if (drink.attributes["ice"] == 1):
+            addIce = Menu("Add Ice")
+            addIce.setParent(sizeSelect)
+            pour.setParent(addIce)
+            addIce.addOption(MenuLink("Continue", addIce, pour))
+            for option in sizeSelect.options:
+                if option.type == "menu_link":
+                    option.setChild(addIce)
+        else:
+            pour.setParent(sizeSelect)
+            for option in sizeSelect.options:
+                if option.type == "menu_link":
+                    option.setChild(pour)
+
+    def pourDrink(self, drink):
 
         ingredients = drink.attributes["ingredients"].copy()
 
-        if (drink.attributes["strong"] == 1):
-            self.strongCheck()
-        else:
-            ingredients = self.strengthSelect(ingredients)
-        if (drink.attributes["ice"] == 1):
-            self.iceCheck()
+        size = int(self.drink_attributes["size"].split()[0])
+        strength = self.drink_attributes["strength"]
+        alcModifier = 1
 
-        ingredients = self.sizeSelect(ingredients)
+        if (strength == "strong"):
+            alcModifier = 1.3
+        elif (strength == "weak"):
+            alcModifier = 0.7
+
+        # strength calculations
+        totalIngredients = 0
+        for ing in ingredients:
+            totalIngredients += ing.value
+            for opts in drink_options:
+                if (ing.key == opts.attributes["value"]
+                        and opts.attributes["alcohol"] == 1):
+                    ing.value = ing.value * alcModifier
+
+        # size calculations
+        totalIngredients = 0
+        for ing in ingredients:
+            ing = ing.value * size / totalIngredients
+
+        maxTime = 0
+        pumpThreads = []
 
         for ing in ingredients.keys():
             for pump in self.pump_configuration.keys():
@@ -399,11 +376,10 @@ class Bartender(MenuDelegate):
         for thread in pumpThreads:
             thread.join()
 
-        if (drink.add is not None):
-            self.addCheck(drink)
-
-        # show the main menu
-        self.menuContext.retreat()
+        # check for additions
+        if (drink.attributes["add"] is not None):
+            addMenu = Menu("Just add " + drink.attributes["add"])
+            addMenu.addOption(MenuLink("continue", None, self.mainMenu))
 
         # sleep for a couple seconds to make sure the interrupts
         # don't get triggered
@@ -447,4 +423,5 @@ class Bartender(MenuDelegate):
 
 bartender = Bartender()
 bartender.buildMenu(drink_list, drink_options)
+bartender.setMainMenu(bartender.menuContext.currentMenu)
 bartender.run()
