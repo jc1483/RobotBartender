@@ -439,17 +439,19 @@ class Bartender(MenuDelegate):
             self.menuContext.select()
 
     def run(self):
+        self.menuContext.showMenu()
         self.startInterrupts()
-    # main loop
-    try:
-        while True:
-            time.sleep(0.1)
 
-    except KeyboardInterrupt:
-        GPIO.cleanup()       # clean up GPIO on CTRL+C exit
-    GPIO.cleanup()           # clean up GPIO on normal exit
+        # main loop
+        try:
+            while True:
+                time.sleep(0.1)
 
-    traceback.print_exc()
+        except KeyboardInterrupt:
+            GPIO.cleanup()       # clean up GPIO on CTRL+C exit
+        GPIO.cleanup()           # clean up GPIO on normal exit
+
+        traceback.print_exc()
 
 
 bartender = Bartender()
