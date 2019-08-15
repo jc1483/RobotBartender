@@ -271,16 +271,16 @@ class Bartender(MenuDelegate):
         if (drink.attributes["strong"] == 1):
             strengthCheck = Menu("This drink is strong")
             strengthCheck.addOption(MenuLink(
-                "Continue", strengthCheck, {"strength": "normal"}))
+                "Continue", strengthCheck, None, {"strength": "normal"}))
             strengthCheck.setParent(self.menuContext.currentMenu)
             self.menuContext.setMenu(strengthCheck)
         else:
             # Select strength
             strengthSelect = Menu("Select strength")
             strengthSelect.addOption(MenuLink(
-                "Weak", strengthSelect, {"strength": "weak"}))
+                "Weak", strengthSelect, None, {"strength": "weak"}))
             strengthSelect.addOption(MenuLink(
-                "Normal", strengthSelect), {"strength": "normal"})
+                "Normal", strengthSelect, None, {"strength": "normal"}))
             strengthSelect.addOption(MenuLink(
                 "Strong", strengthSelect, None, {"strength": "strong"}))
             strengthSelect.setParent(self.menuContext.currentMenu)

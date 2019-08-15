@@ -17,11 +17,12 @@ class MenuItem(object):
 
 
 class MenuLink(object):
-    def __init__(self, name, parent, child=None):
-        self.type = "menuLink"
+    def __init__(self, name, parent, child=None, attributes=None):
+        self.type = "menu_link"
         self.name = name
         self.parent = parent
         self.child = child
+        self.attributes = attributes
 
     def setParent(self, menu):
         self.parent = menu
