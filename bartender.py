@@ -186,6 +186,7 @@ class Bartender(MenuDelegate):
             self.pump_configuration[
                 menuItem.attributes["key"]]["value"] = value
             Bartender.writePumpConfiguration(self.pump_configuration)
+            self.menuContext.retreat()
             return True
         elif(menuItem.type == "check"):
             return True
@@ -231,7 +232,7 @@ class Bartender(MenuDelegate):
         # self.startInterrupts()
         self.running = False
 
-    def strongCheck(self, drink):
+    def strongCheck(self):
         s = Menu("This drink is strong")
         s.addOption(MenuItem('check', "continue"))
         s.setParent(self.menuContext.getCurrentMenu())
@@ -243,7 +244,7 @@ class Bartender(MenuDelegate):
         except KeyboardInterrupt:
             print("keypress")
 
-    def iceCheck(self, drink):
+    def iceCheck(self):
         i = Menu("Add Ice")
         i.addOption(MenuItem('check', "continue"))
         i.setParent(self.menuContext.getCurrentMenu())
@@ -256,7 +257,7 @@ class Bartender(MenuDelegate):
             print("keypress")
 
     def addCheck(self, drink):
-        a = Menu("Just add " + drink.add + "!")
+        a = Menu("Just add " + drink.attributes["add"] + "!")
         a.addOption(MenuItem('check', "done"))
         a.setParent(self.menuContext.getCurrentMenu())
         self.menuContext.setMenu(a)
@@ -366,12 +367,12 @@ class Bartender(MenuDelegate):
 
         ingredients = drink.attributes["ingredients"].copy()
 
-        if (drink.strong == 1):
-            self.strongCheck(drink)
+        if (drink.attributes["strong"] == 1):
+            self.strongCheck()
         else:
             ingredients = self.strengthSelect(ingredients)
-        if (drink.ice == 1):
-            self.iceCheck(drink)
+        if (drink.attributes["ice"] == 1):
+            self.iceCheck()
 
         ingredients = self.sizeSelect(ingredients)
 
