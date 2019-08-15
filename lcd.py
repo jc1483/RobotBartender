@@ -112,8 +112,11 @@ E_PULSE = 0.0005
 E_DELAY = 0.0005
 
 
-def main():
-    # Main program block
+def lcd_blank():
+    lcd_byte(LCD_BLANK, LCD_RS_CMD)
+
+
+def lcd_init():
 
     GPIO.setmode(GPIO.BCM)       # Use BCM GPIO numbers
     GPIO.setup(LCD_E, GPIO.OUT)  # E
@@ -121,37 +124,6 @@ def main():
     for pin in LCD_DATA_PINS:
         GPIO.setup(pin, GPIO.OUT)  # DBx
 
-    # Initialise display
-    lcd_init()
-
-    while True:
-
-        # Send some centred test
-        lcd_string("--------------------", LCD_LINE_1, CENTERED)
-        lcd_string("Mexican Water!", LCD_LINE_2, RIGHT_JUSTIFIED)
-        lcd_string("WOW", LCD_LINE_3, RIGHT_JUSTIFIED)
-        lcd_string("--------------------", LCD_LINE_4, CENTERED)
-
-        time.sleep(3)  # 3 second delay
-
-
-	# Blank display
-	lcd_byte(LCD_BLANK, LCD_RS_CMD)
-
-        lcd_string("WAHOO HOLLY", LCD_LINE_1, LEFT_JUSTIFIED)
-        lcd_string("YEYEYEYEYEYE", LCD_LINE_2, LEFT_JUSTIFIED)
-        lcd_string("", LCD_LINE_3, LEFT_JUSTIFIED)
-        lcd_string("Very LCD", LCD_LINE_4, LEFT_JUSTIFIED)
-
-        time.sleep(3)  # 20 second delay
-
-        # Blank display
-        lcd_byte(LCD_BLANK, LCD_RS_CMD)
-
-        time.sleep(3)  # 3 second delay
-
-
-def lcd_init():
     # Initialise display
     lcd_byte(LCD_BLANK, LCD_RS_CMD)  # Blank the LCD
     lcd_byte(LCD_RETURN, LCD_RS_CMD)  # Return cursor to home
@@ -169,7 +141,8 @@ def lcd_init():
     lcd_byte(
         LCD_FUNCTION_SET  # Select function
         | FUNCTION_8_BIT  # Set MPL mode to 8 bit
-        | FUNCTION_5X11_FONT  # Set font to 5x11 dots (doesn't matter if double line format)
+        | FUNCTION_5X11_FONT
+        # Set font to 5x11 dots (doesn't matter if double line format)
         | FUNCTION_2_LINE_DISPLAY,  # Set MPL to double line format
         LCD_RS_CMD  # Send byte as command
         )
@@ -189,7 +162,7 @@ def lcd_byte(bits, mode):
     time.sleep(E_DELAY)
     for index, pin in enumerate(LCD_DATA_PINS):
         GPIO.output(pin, get_bit(bits, index))
-	print("setting pin " + str(pin) + " to " + str(get_bit(bits,index)))
+        print("setting pin " + str(pin) + " to " + str(get_bit(bits, index)))
         time.sleep(E_DELAY)
     pulse_enable()
     time.sleep(E_DELAY)
@@ -237,15 +210,3 @@ def lcd_string(message, line, style=LEFT_JUSTIFIED):
             lcd_byte(ord(" "), LCD_RS_CHR)
     for i in range(min(LCD_WIDTH, len(message))):
         lcd_byte(ord(message[i]), LCD_RS_CHR)
-
-
-if __name__ == '__main__':
-
-    try:
-        main()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        lcd_byte(LCD_BLANK, LCD_RS_CMD)
-        lcd_string("Goodbye!", LCD_LINE_1, RIGHT_JUSTIFIED)
-        GPIO.cleanup()
