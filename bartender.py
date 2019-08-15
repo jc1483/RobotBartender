@@ -309,6 +309,10 @@ class Bartender(MenuDelegate):
         # strengthSelect
         sizeSelect = Menu("Select size")
         sizeSelect.setParent(self.menuContext.currentMenu)
+        for links in self.menuContext.currentMenu.options:
+            if links.type == "menu_link":
+                links.setChild(sizeSelect)
+
         # add size options menus to strengthCheck and strengthSelect
         sizeSelect.addOption(MenuLink(
             "Shot", sizeSelect, None, {"size": "shot"}))

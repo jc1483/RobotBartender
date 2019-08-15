@@ -52,10 +52,16 @@ class Menu(object):
         self.parent = parent
 
     def nextSelection(self):
-        self.selectedOption = (self.selectedOption + 1) % len(self.options)
+        if self.selectedOption == len(self.options) - 1:
+            self.selectedOption = 0
+        else:
+            self.selectedOption = self.selectedOption + 1
 
     def getNextSelection(self):
-        return self.options[(self.selectedOption + 1) % len(self.options)]
+        if self.selectedOption == len(self.options) - 1:
+            return self.options[0]
+        else:
+            return self.options[self.selectedOption + 1]
 
     def previousSelection(self):
         if (self.selectedOption == 0):
