@@ -1,6 +1,4 @@
 # menu.py
-import lcd as LCD
-
 # Define globals
 DIRECTION_UP = 0
 DIRECTION_DOWN = 1
@@ -76,40 +74,41 @@ class Menu(object):
 
 
 class MenuContext(object):
-    def __init__(self, menu, delegate):
+    def __init__(self, menu, delegate, LCDLayer):
         self.currentMenu = menu
         self.delegate = delegate
+        self.lcdLayer = LCDLayer
 
     def showMenu(self):
         """
         Shows the menu
         """
-        LCD.lcd_blank()
+        self.lcdLayer.lcd_blank()
         self.writeMenuHeader()
         self.writeMenuOptions()
 
     def writeMenuHeader(self):
-        LCD.lcd_string(
+        self.lcdLayer.lcd_string(
             self.currentMenu.name,
-            LCD.LCD_LINE_1,
-            LCD.CENTERED
+            self.lcdLayer.LCD_LINE_1,
+            self.lcdLayer.CENTERED
             )
 
     def writeMenuOptions(self):
-        LCD.lcd_string(
+        self.lcdLayer.lcd_string(
             "  " + self.currentMenu.getPreviousSelection().name,
-            LCD.LCD_LINE_2,
-            LCD.LEFT_JUSTIFIED
+            self.lcdLayer.LCD_LINE_2,
+            self.lcdLayer.LEFT_JUSTIFIED
             )
-        LCD.lcd_string(
+        self.lcdLayer.lcd_string(
             "* " + self.currentMenu.getSelection().name,
-            LCD.LCD_LINE_3,
-            LCD.LEFT_JUSTIFIED
+            self.lcdLayer.LCD_LINE_3,
+            self.lcdLayer.LEFT_JUSTIFIED
             )
-        LCD.lcd_string(
+        self.lcdLayer.lcd_string(
             "  " + self.currentMenu.getNextSelection().name,
-            LCD.LCD_LINE_4,
-            LCD.LEFT_JUSTIFIED
+            self.lcdLayer.LCD_LINE_4,
+            self.lcdLayer.LEFT_JUSTIFIED
             )
 
     def setMenu(self, menu):

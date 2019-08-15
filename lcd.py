@@ -112,90 +112,88 @@ E_PULSE = 0.0001
 E_DELAY = 0.0001
 
 
-def lcd_blank():
-    lcd_byte(LCD_BLANK, LCD_RS_CMD)
+class LCDLayer(object):
+    def __init__(self):
+        self.lcd_init()
 
+    def lcd_blank(self):
+        self.lcd_byte(LCD_BLANK, LCD_RS_CMD)
 
-def lcd_init():
+    def lcd_init(self):
 
-    GPIO.setmode(GPIO.BCM)       # Use BCM GPIO numbers
-    GPIO.setup(LCD_E, GPIO.OUT, initial=GPIO.LOW)  # E
-    GPIO.setup(LCD_RS, GPIO.OUT, initial=GPIO.LOW)  # RS
-    for pin in LCD_DATA_PINS:
-        GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)  # DBx
+        GPIO.setmode(GPIO.BCM)       # Use BCM GPIO numbers
+        GPIO.setup(LCD_E, GPIO.OUT, initial=GPIO.LOW)  # E
+        GPIO.setup(LCD_RS, GPIO.OUT, initial=GPIO.LOW)  # RS
+        for pin in LCD_DATA_PINS:
+            GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)  # DBx
 
-    # Initialise display
-    lcd_byte(LCD_BLANK, LCD_RS_CMD)  # Blank the LCD
-    lcd_byte(LCD_RETURN, LCD_RS_CMD)  # Return cursor to home
-    lcd_byte(
-        LCD_CURSOR  # Select cursor options
-        | CURSOR_RIGHT,  # Set cursor motion to right to left
-        LCD_RS_CMD)  # Send byte as command
-    lcd_byte(
-        LCD_DISPLAY  # Select display options
-        | DISPLAY_ON  # Turn display on
-        | DISPLAY_CURSOR_OFF  # Turn cursor on
-        | DISPLAY_CURSOR_SOLID,  # Turn cursor blink off
-        LCD_RS_CMD  # Send byte as command
-        )
-    lcd_byte(
-        LCD_FUNCTION_SET  # Select function
-        | FUNCTION_8_BIT  # Set MPL mode to 8 bit
-        | FUNCTION_5X11_FONT
-        # Set font to 5x11 dots (doesn't matter if double line format)
-        | FUNCTION_2_LINE_DISPLAY,  # Set MPL to double line format
-        LCD_RS_CMD  # Send byte as command
-        )
-    lcd_byte(LCD_BLANK, LCD_RS_CMD)  # Blank the LCD
+        # Initialise display
+        self.lcd_byte(LCD_BLANK, LCD_RS_CMD)  # Blank the LCD
+        self.lcd_byte(LCD_RETURN, LCD_RS_CMD)  # Return cursor to home
+        self.lcd_byte(
+            LCD_CURSOR  # Select cursor options
+            | CURSOR_RIGHT,  # Set cursor motion to right to left
+            LCD_RS_CMD)  # Send byte as command
+        self.lcd_byte(
+            LCD_DISPLAY  # Select display options
+            | DISPLAY_ON  # Turn display on
+            | DISPLAY_CURSOR_OFF  # Turn cursor on
+            | DISPLAY_CURSOR_SOLID,  # Turn cursor blink off
+            LCD_RS_CMD  # Send byte as command
+            )
+        self.lcd_byte(
+            LCD_FUNCTION_SET  # Select function
+            | FUNCTION_8_BIT  # Set MPL mode to 8 bit
+            | FUNCTION_5X11_FONT
+            # Set font to 5x11 dots (doesn't matter if double line format)
+            | FUNCTION_2_LINE_DISPLAY,  # Set MPL to double line format
+            LCD_RS_CMD  # Send byte as command
+            )
+        self.lcd_byte(LCD_BLANK, LCD_RS_CMD)  # Blank the LCD
 
+    def lcd_byte(self, bits, mode):
+        # Send byte to data pins
+        # bits = data
+        # mode = True  for character
+        #        False for command
 
-def lcd_byte(bits, mode):
-    # Send byte to data pins
-    # bits = data
-    # mode = True  for character
-    #        False for command
+        self.reset_pins()
+        GPIO.output(LCD_RS, mode)  # RS
+        for index, pin in enumerate(LCD_DATA_PINS):
+            GPIO.output(pin, self.get_bit(bits, index))
+        self.pulse_enable()
+        self.reset_pins()
 
-    reset_pins()
-    GPIO.output(LCD_RS, mode)  # RS
-    for index, pin in enumerate(LCD_DATA_PINS):
-        GPIO.output(pin, get_bit(bits, index))
-    pulse_enable()
-    reset_pins()
-
-
-def reset_pins():
-    for pin in LCD_DATA_PINS:
+    def reset_pins(self):
+        for pin in LCD_DATA_PINS:
+            time.sleep(E_DELAY)
+            GPIO.output(pin, 0)
         time.sleep(E_DELAY)
-        GPIO.output(pin, 0)
-    time.sleep(E_DELAY)
 
+    def pulse_enable(self):
+        # Pulse the enable pin
+        time.sleep(E_DELAY)
+        GPIO.output(LCD_E, LCD_E_ENABLE)
+        time.sleep(E_PULSE)
+        GPIO.output(LCD_E, LCD_E_DISABLE)
+        time.sleep(E_DELAY)
 
-def pulse_enable():
-    # Pulse the enable pin
-    time.sleep(E_DELAY)
-    GPIO.output(LCD_E, LCD_E_ENABLE)
-    time.sleep(E_PULSE)
-    GPIO.output(LCD_E, LCD_E_DISABLE)
-    time.sleep(E_DELAY)
+    def get_bit(self, bits, index):
+        # get the index'th bit of
+        # the passed bits
 
+        return bits & (1 << index) and 1 or 0
 
-def get_bit(bits, index):
-    # get the index'th bit of
-    # the passed bits
+    def lcd_string(self, message, line, style=LEFT_JUSTIFIED):
+        # send as many bits as can fit on a line
 
-    return bits & (1 << index) and 1 or 0
+        self.lcd_byte(line | LCD_SET_DDRAM, LCD_RS_CMD)
 
-
-def lcd_string(message, line, style=LEFT_JUSTIFIED):
-    # send as many bits as can fit on a line
-
-    lcd_byte(line | LCD_SET_DDRAM, LCD_RS_CMD)
-
-    if ((style == RIGHT_JUSTIFIED) and (len(message) < LCD_WIDTH)):
-        for i in range(LCD_WIDTH - len(message)):
-            lcd_byte(ord(" "), LCD_RS_CHR)
-    elif (style == CENTERED and len(message) < LCD_WIDTH):
-        for i in range((LCD_WIDTH - len(message)) / 2):
-            lcd_byte(ord(" "), LCD_RS_CHR)
-    for i in range(min(LCD_WIDTH, len(message))):
-        lcd_byte(ord(message[i]), LCD_RS_CHR)
+        if ((style == RIGHT_JUSTIFIED) and (len(message) < LCD_WIDTH)):
+            for i in range(LCD_WIDTH - len(message)):
+                self.lcd_byte(ord(" "), LCD_RS_CHR)
+        elif (style == CENTERED and len(message) < LCD_WIDTH):
+            for i in range((LCD_WIDTH - len(message)) / 2):
+                self.lcd_byte(ord(" "), LCD_RS_CHR)
+        for i in range(min(LCD_WIDTH, len(message))):
+            self.lcd_byte(ord(message[i]), LCD_RS_CHR)

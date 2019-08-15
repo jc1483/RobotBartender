@@ -38,7 +38,7 @@ class Bartender(MenuDelegate):
         self.running = False
 
         # initialize the LCD
-        LCD.lcd_init()
+        self.lcdLayer = LCD.LCDLayer()
 
         self.btn1Pin = LEFT_BTN_PIN
         self.btn2Pin = RIGHT_BTN_PIN
@@ -163,7 +163,7 @@ class Bartender(MenuDelegate):
         m.addOption(configuration_menu)
 
         # create a menu context
-        self.menuContext = MenuContext(m, self)
+        self.menuContext = MenuContext(m, self, self.lcdLayer)
 
     def setMainMenu(self, menu):
         self.mainMenu = menu
@@ -254,11 +254,13 @@ class Bartender(MenuDelegate):
         GPIO.output(pin, GPIO.HIGH)
 
     def progressBar(self, waitTime):
-        LCD.lcd_blank()
-        LCD.lcd_byte(LCD.LCD_LINE_2 | LCD.LCD_SET_DDRAM, LCD.LCD_RS_CMD)
+        self.lcdLayer.lcd_blank()
+        self.lcdLayer.lcd_byte(
+            self.lcdLayer.LCD_LINE_2
+            | self.lcdLayer.LCD_SET_DDRAM, self.lcdLayer.LCD_RS_CMD)
         block = 0xff
         for i in range(20):
-            LCD.lcd_byte(block, LCD.LCD_RS_CHR)
+            self.lcdLayer.lcd_byte(block, self.lcdLayer.LCD_RS_CHR)
             time.sleep(waitTime / 20)
         return True
 
