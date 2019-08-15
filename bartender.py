@@ -220,7 +220,7 @@ class Bartender(MenuDelegate):
             self.menuContext.retreat()
             return True
         elif(menuItem.type == "pour"):
-            self.pourDrink()
+            self.pourDrink(menuItem.attributes)
             return True
         elif(menuItem.type == "clean"):
             self.clean()
@@ -228,7 +228,8 @@ class Bartender(MenuDelegate):
         elif(menuItem.type == "menu_link"):
             if (menuItem.child is not None):
                 try:
-                    self.drink_attributes.append(menuItem.attributes)
+                    for attrib in menuItem.attributes:
+                        self.drink_attributes.append(attrib)
                 except TypeError:
                     print("menu item has no attributes")
                 self.menuContext.currentMenu = menuItem.child
@@ -333,7 +334,7 @@ class Bartender(MenuDelegate):
 
         # pour menu
         pour = Menu("Ready to pour?")
-        pour.addOption(MenuItem("pour", "Continue", drink))
+        pour.addOption(MenuItem("pour", "Continue", drink.attributes))
 
         # add ice
         if (drink.attributes["ice"] == 1):
@@ -341,7 +342,7 @@ class Bartender(MenuDelegate):
             addIce.setParent(sizeSelect)
             pour.setParent(addIce)
             addIce.addOption(MenuLink(
-                "Continue", addIce, pour, drink.attributes["ingredients"]))
+                "Continue", addIce, pour))
             for option in sizeSelect.options:
                 if option.type == "menu_link":
                     option.setChild(addIce)
@@ -354,10 +355,9 @@ class Bartender(MenuDelegate):
         # finally show the menu structure
         self.menuContext.showMenu()
 
-    def pourDrink(self):
+    def pourDrink(self, drinkAttributes):
         self.running = True
-        ingredients = self.drink_attributes["ingredients"].copy()
-
+        ingredients = drinkAttributes["ingredients"].copy()
         size = int(self.drink_attributes["size"].split()[0])
         strength = self.drink_attributes["strength"]
         self.drink_attributes = []
@@ -418,7 +418,7 @@ class Bartender(MenuDelegate):
 
         # check for additions
         try:
-            addMenu = Menu("Just add " + drink.attributes["add"])
+            addMenu = Menu("Just add " + self.drink_attributes["add"])
             addMenu.addOption(MenuLink("Done", None, self.mainMenu))
             addMenu.setParent(self.mainMenu)
             self.menuContext.setMenu(addMenu)
