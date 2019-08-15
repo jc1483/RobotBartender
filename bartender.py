@@ -1,4 +1,5 @@
 import time
+import copy
 import RPi.GPIO as GPIO
 import json
 import threading
@@ -354,10 +355,11 @@ class Bartender(MenuDelegate):
 
     def pourDrink(self, drink):
         self.running = True
-        ingredients = drink.attributes["ingredients"].copy()
+        ingredients = copy.copy(drink.attributes["ingredients"])
 
         size = int(self.drink_attributes["size"].split()[0])
         strength = self.drink_attributes["strength"]
+        self.drink_attributes = []
         alcModifier = 1
 
         if (strength == "strong"):

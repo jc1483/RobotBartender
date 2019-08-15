@@ -145,7 +145,7 @@ class MenuContext(object):
 
         raises ValueError if all options are visible==False
         """
-        self.currentMenu.previousSelection()
+        self.currentMenu.nextSelection()
         self.showMenu()
 
     def retreat(self):
