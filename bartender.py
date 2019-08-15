@@ -1,5 +1,4 @@
 import time
-import copy
 import RPi.GPIO as GPIO
 import json
 import threading
@@ -30,7 +29,7 @@ class Bartender(MenuDelegate):
     def __init__(self):
 
         # initialize drink attributes
-        self.drink_attributes = []
+        self.drink_attributes = {}
 
         # initialize main menu
         self.mainMenu = None
@@ -228,8 +227,8 @@ class Bartender(MenuDelegate):
         elif(menuItem.type == "menu_link"):
             if (menuItem.child is not None):
                 try:
-                    for attrib in menuItem.attributes:
-                        self.drink_attributes.append(attrib)
+                    self.drink_attributes.update(menuItem.attributes)
+                    print(self.drink_attributes)
                 except TypeError:
                     print("menu item has no attributes")
                 self.menuContext.currentMenu = menuItem.child
@@ -358,7 +357,11 @@ class Bartender(MenuDelegate):
     def pourDrink(self, drinkAttributes):
         self.running = True
         ingredients = drinkAttributes["ingredients"].copy()
-        size = int(self.drink_attributes["size"].split()[0])
+        size = self.drink_attributes["size"].split()[0]
+        if size == "shot":
+            size = 1.25
+        else:
+            size = int(size)
         strength = self.drink_attributes["strength"]
         self.drink_attributes = []
         alcModifier = 1
