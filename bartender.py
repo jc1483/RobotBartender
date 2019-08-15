@@ -275,8 +275,12 @@ class Bartender(MenuDelegate):
 
     def pour(self, pin, waitTime):
         GPIO.output(pin, GPIO.LOW)
+        print(
+            "Starting pour on pin " + str(pin) + " for " + str(waitTime)
+            + " seconds")
         time.sleep(waitTime)
         GPIO.output(pin, GPIO.HIGH)
+        print("Stopping pour on pin " + str(pin))
 
     def progressBar(self, waitTime):
         self.lcdLayer.lcd_blank()
@@ -357,12 +361,15 @@ class Bartender(MenuDelegate):
     def pourDrink(self, drinkAttributes):
         self.running = True
         ingredients = drinkAttributes["ingredients"].copy()
+        print("Ingredients: " + ingredients)
         size = self.drink_attributes["size"].split()[0]
         if size == "shot":
             size = 1.25
         else:
             size = int(size)
+        print("Size = " + str(size) + " oz")
         strength = self.drink_attributes["strength"]
+        print("Strength: " + str(strength))
         self.drink_attributes = []
         alcModifier = 1
 
@@ -376,14 +383,16 @@ class Bartender(MenuDelegate):
         for ing in ingredients:
             totalIngredients += ingredients[ing]
             for opts in drink_options:
-                if (ing == opts.attributes["value"]
-                        and opts.attributes["alcohol"] == 1):
+                if (ing == opts["value"]
+                        and opts["alcohol"] == 1):
                     ingredients[ing] = ingredients[ing] * alcModifier
 
+        print("Total parts: " + str(totalIngredients))
+
         # size calculations
-        totalIngredients = 0
         for ing in ingredients:
             ingredients[ing] = ingredients[ing] * size / totalIngredients
+            print(str(ingredients[ing]) + " oz of " + str(ing))
 
         maxTime = 0
         pumpThreads = []
@@ -391,7 +400,7 @@ class Bartender(MenuDelegate):
         for ing in ingredients.keys():
             for pump in self.pump_configuration.keys():
                 if ing == self.pump_configuration[pump]["value"]:
-                    waitTime = ing * FLOW_RATE
+                    waitTime = ing / FLOW_RATE  # oz / (oz/sec) = sec
                     if (waitTime > maxTime):
                         maxTime = waitTime
                     pump_t = threading.Thread(
@@ -399,6 +408,8 @@ class Bartender(MenuDelegate):
                         args=(self.pump_configuration[pump]["pin"], waitTime)
                         )
                     pumpThreads.append(pump_t)
+
+        print("Total pour time: " + str(maxTime))
 
         # start the pump threads
         for thread in pumpThreads:
