@@ -138,7 +138,7 @@ class Bartender(MenuDelegate):
                         }
                     )
                 )
-            except KeyError():
+            except KeyError:
                 drink_opts.append(
                     MenuItem(
                         'drink',
@@ -412,7 +412,7 @@ class Bartender(MenuDelegate):
             addMenu.addOption(MenuLink("Done", None, self.mainMenu))
             addMenu.setParent(self.mainMenu)
             self.menuContext.setMenu(addMenu)
-        except KeyError():
+        except KeyError:
             self.menuContext.setMenu(self.mainMenu)
 
     def down_btn(self, ctx):
