@@ -286,10 +286,6 @@ class Bartender(MenuDelegate):
         return True
 
     def makeDrink(self, drink):
-        # cancel any button presses while the drink is being made
-        # self.stopInterrupts()
-        self.running = True
-
         # Check for strength
         if (drink.attributes["strong"] == 1):
             strengthCheck = Menu("This drink is strong")
@@ -350,6 +346,7 @@ class Bartender(MenuDelegate):
         self.menuContext.showMenu()
 
     def pourDrink(self, drink):
+        self.running = True
         ingredients = drink.attributes["ingredients"].copy()
 
         size = int(self.drink_attributes["size"].split()[0])
