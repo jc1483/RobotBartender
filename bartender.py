@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO
 import json
 import threading
 import traceback
-import lcd.py as LCD
+import lcd as LCD
 
 from menu import MenuItem, Menu, MenuContext, MenuDelegate
 from drinks import drink_list, drink_options
@@ -11,16 +11,16 @@ from drinks import drink_list, drink_options
 GPIO.setmode(GPIO.BCM)
 
 LEFT_BTN_PIN = 12
-LEFT_PIN_BOUNCE = 2000
+LEFT_PIN_BOUNCE = 100
 
 RIGHT_BTN_PIN = 16
-RIGHT_PIN_BOUNCE = 2000
+RIGHT_PIN_BOUNCE = 100
 
 UP_BTN_PIN = 21
-UP_PIN_BOUNCE = 2000
+UP_PIN_BOUNCE = 100
 
 DOWN_BTN_PIN = 20
-DOWN_PIN_BOUNCE = 2000
+DOWN_PIN_BOUNCE = 100
 
 FLOW_RATE = 60.0/100.0  # oz per second
 
@@ -111,7 +111,7 @@ class Bartender(MenuDelegate):
                 MenuItem(
                     'drink',
                     o["name"],
-                    {"ingredients": {o["value"]: 1}}
+                    {"ingredients": {o["value"]: 1}, "strong": o["alcohol"]}
                     )
                 )
         for d in drink_list:
@@ -364,12 +364,12 @@ class Bartender(MenuDelegate):
         maxTime = 0
         pumpThreads = []
 
-        ingredients = drink.ingredients.copy()
+        ingredients = drink.attributes["ingredients"].copy()
 
         if (drink.strong == 1):
             self.strongCheck(drink)
         else:
-            ingredients = self.strengthSelect(drink.ingredients)
+            ingredients = self.strengthSelect(ingredients)
         if (drink.ice == 1):
             self.iceCheck(drink)
 

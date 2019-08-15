@@ -93,7 +93,7 @@ class MenuContext(object):
             )
         LCD.lcd_string(
             "  " + self.currentMenu.getNextSelection().name,
-            LCD.LINE_4,
+            LCD.LCD_LINE_4,
             LCD.LEFT_JUSTIFIED
             )
 

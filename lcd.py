@@ -119,10 +119,10 @@ def lcd_blank():
 def lcd_init():
 
     GPIO.setmode(GPIO.BCM)       # Use BCM GPIO numbers
-    GPIO.setup(LCD_E, GPIO.OUT)  # E
-    GPIO.setup(LCD_RS, GPIO.OUT)  # RS
+    GPIO.setup(LCD_E, GPIO.OUT, initial=GPIO.LOW)  # E
+    GPIO.setup(LCD_RS, GPIO.OUT, initial=GPIO.LOW)  # RS
     for pin in LCD_DATA_PINS:
-        GPIO.setup(pin, GPIO.OUT)  # DBx
+        GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)  # DBx
 
     # Initialise display
     lcd_byte(LCD_BLANK, LCD_RS_CMD)  # Blank the LCD
