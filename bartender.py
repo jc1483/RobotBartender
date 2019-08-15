@@ -356,9 +356,7 @@ class Bartender(MenuDelegate):
 
     def pourDrink(self):
         self.running = True
-        ingredients = []
-        for ing in self.drink_attributes["ingredients"]:
-            ingredients.append(ing)
+        ingredients = self.drink_attributes["ingredients"].copy()
 
         size = int(self.drink_attributes["size"].split()[0])
         strength = self.drink_attributes["strength"]
