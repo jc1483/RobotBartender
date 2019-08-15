@@ -5,7 +5,7 @@ import threading
 import traceback
 import lcd.py as LCD
 
-from menu import MenuItem, Menu, Back, MenuContext, MenuDelegate
+from menu import MenuItem, Menu, MenuContext, MenuDelegate
 from drinks import drink_list, drink_options
 
 GPIO.setmode(GPIO.BCM)
@@ -111,7 +111,7 @@ class Bartender(MenuDelegate):
                 MenuItem(
                     'drink',
                     o["name"],
-                    {"ingredients": o["value"]}
+                    {"ingredients": {o["value"]: 1}}
                     )
                 )
         for d in drink_list:
@@ -144,9 +144,6 @@ class Bartender(MenuDelegate):
 
         # add pump menus to the configuration menu
         configuration_menu.addOptions(pump_opts)
-
-        # add a back button to the configuration menu
-        configuration_menu.addOption(Back("Back"))
 
         # adds an option that cleans all pumps to the configuration menu
         configuration_menu.addOption(MenuItem('clean', 'Clean'))
@@ -235,11 +232,8 @@ class Bartender(MenuDelegate):
         self.running = False
 
     def strongCheck(self, drink):
-        s = Menu("Check Strength")
-        strongMessage = "This drink is strong, are you sure you want to "
-        strongMessage = strongMessage + "continue?"
-        print strongMessage
-        s.addOption(MenuItem('check', strongMessage))
+        s = Menu("This drink is strong")
+        s.addOption(MenuItem('check', "continue"))
         s.setParent(self.menuContext.getCurrentMenu())
         self.menuContext.setMenu(s)
         self.menuContext.showMenu()
@@ -251,9 +245,7 @@ class Bartender(MenuDelegate):
 
     def iceCheck(self, drink):
         i = Menu("Add Ice")
-        iceMessage = "Add ice to your glass if you haven't already!"
-        print iceMessage
-        i.addOption(MenuItem('check', iceMessage))
+        i.addOption(MenuItem('check', "continue"))
         i.setParent(self.menuContext.getCurrentMenu())
         self.menuContext.setMenu(i)
         self.menuContext.showMenu()
@@ -264,10 +256,8 @@ class Bartender(MenuDelegate):
             print("keypress")
 
     def addCheck(self, drink):
-        a = Menu("Additions")
-        addMessage = "Done! Just add " + drink.add
-        print addMessage
-        a.addOption(MenuItem('check', addMessage))
+        a = Menu("Just add " + drink.add + "!")
+        a.addOption(MenuItem('check', "done"))
         a.setParent(self.menuContext.getCurrentMenu())
         self.menuContext.setMenu(a)
         self.menuContext.showMenu()
@@ -424,11 +414,11 @@ class Bartender(MenuDelegate):
 
     def down_btn(self, ctx):
         if not self.running:
-            self.menuContext.increase()
+            self.menuContext.scroll_down()
 
     def up_btn(self, ctx):
         if not self.running:
-            self.menuContext.decrease()
+            self.menuContext.scroll_up()
 
     def left_btn(self, ctx):
         if not self.running:

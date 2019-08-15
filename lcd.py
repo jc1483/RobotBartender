@@ -146,7 +146,8 @@ def lcd_init():
         | FUNCTION_2_LINE_DISPLAY,  # Set MPL to double line format
         LCD_RS_CMD  # Send byte as command
         )
-    lcd_byte(LCD_BLANK, LCD_RS_CMD)  # 00000001 Clear display
+    lcd_byte(LCD_BLANK, LCD_RS_CMD)  # Blank the LCD
+    lcd_byte(LCD_RETURN, LCD_RS_CMD)  # Return cursor to home
 
 
 def lcd_byte(bits, mode):
@@ -162,7 +163,6 @@ def lcd_byte(bits, mode):
     time.sleep(E_DELAY)
     for index, pin in enumerate(LCD_DATA_PINS):
         GPIO.output(pin, get_bit(bits, index))
-        print("setting pin " + str(pin) + " to " + str(get_bit(bits, index)))
         time.sleep(E_DELAY)
     pulse_enable()
     time.sleep(E_DELAY)

@@ -16,10 +16,11 @@ class MenuItem(object):
         self.visible = visible
 
 
-class Menu(MenuItem):
+class Menu(object):
     def __init__(self, name):
+        self.type = "menu"
         self.name = name
-        self.options = ["blank"]
+        self.options = [MenuItem("blank", "")]
         self.selectedOption = 0
         self.parent = None
 
@@ -38,7 +39,7 @@ class Menu(MenuItem):
         self.selectedOption = (self.selectedOption + 1) % len(self.options)
 
     def getNextSelection(self):
-        return (self.selectedOption + 1) % len(self.options)
+        return self.options[(self.selectedOption + 1) % len(self.options)]
 
     def previousSelection(self):
         if (self.selectedOption == 0):
@@ -48,9 +49,9 @@ class Menu(MenuItem):
 
     def getPreviousSelection(self):
         if (self.selectedOption == 0):
-            return len(self.options) - 1
+            return self.options[len(self.options) - 1]
         else:
-            return self.selectedOption - 1
+            return self.options[self.selectedOption - 1]
 
     def getSelection(self):
         return self.options[self.selectedOption]
@@ -74,24 +75,24 @@ class MenuContext(object):
 
     def writeMenuHeader(self):
         LCD.lcd_string(
-            self.getCurrentMenu().name,
+            self.currentMenu.name,
             LCD.LCD_LINE_1,
             LCD.CENTERED
             )
 
     def writeMenuOptions(self):
         LCD.lcd_string(
-            "  " + self.getCurrentMenu().getPreviousSelection().name,
+            "  " + self.currentMenu.getPreviousSelection().name,
             LCD.LCD_LINE_2,
             LCD.LEFT_JUSTIFIED
             )
         LCD.lcd_string(
-            "* " + self.getCurrentMenu().getSelection().name,
+            "* " + self.currentMenu.getSelection().name,
             LCD.LCD_LINE_3,
             LCD.LEFT_JUSTIFIED
             )
         LCD.lcd_string(
-            "  " + self.getCurrentMenu().getNextSelection().name,
+            "  " + self.currentMenu.getNextSelection().name,
             LCD.LINE_4,
             LCD.LEFT_JUSTIFIED
             )
@@ -145,7 +146,6 @@ class MenuContext(object):
 
         defaults:
             "menu" -> sets submenu as the current menu
-            "back" -> sets parent menu as the current menu
 
         returns True if the default logic should be overridden
 
@@ -157,8 +157,8 @@ class MenuContext(object):
             if (selection.type == "menu"):
                 self.setMenu(selection)
                 self.showMenu()
-        else:
-            raise ValueError("Code error, selection type not implemented")
+            else:
+                raise ValueError("Code error, selection type not implemented")
 
 
 class MenuDelegate(object):
