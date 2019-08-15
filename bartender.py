@@ -125,7 +125,7 @@ class Bartender(MenuDelegate):
                 )
             )
         for d in drink_list:
-            if d["add"] is not None:
+            try:
                 drink_opts.append(
                     MenuItem(
                         'drink',
@@ -138,7 +138,7 @@ class Bartender(MenuDelegate):
                         }
                     )
                 )
-            else:
+            except KeyError():
                 drink_opts.append(
                     MenuItem(
                         'drink',
@@ -347,7 +347,6 @@ class Bartender(MenuDelegate):
                     option.setChild(pour)
 
     def pourDrink(self, drink):
-
         ingredients = drink.attributes["ingredients"].copy()
 
         size = int(self.drink_attributes["size"].split()[0])
@@ -399,11 +398,6 @@ class Bartender(MenuDelegate):
         for thread in pumpThreads:
             thread.join()
 
-        # check for additions
-        if (drink.attributes["add"] is not None):
-            addMenu = Menu("Just add " + drink.attributes["add"])
-            addMenu.addOption(MenuLink("continue", None, self.mainMenu))
-
         # sleep for a couple seconds to make sure the interrupts
         # don't get triggered
         time.sleep(2)
@@ -411,6 +405,15 @@ class Bartender(MenuDelegate):
         # reenable interrupts
         # self.startInterrupts()
         self.running = False
+
+        # check for additions
+        try:
+            addMenu = Menu("Just add " + drink.attributes["add"])
+            addMenu.addOption(MenuLink("Done", None, self.mainMenu))
+            addMenu.setParent(self.mainMenu)
+            self.menuContext.setMenu(addMenu)
+        except KeyError():
+            self.menuContext.setMenu(self.mainMenu)
 
     def down_btn(self, ctx):
         if not self.running:
