@@ -57,9 +57,9 @@ LCD_D6 = 15
 LCD_D7 = 25
 
 LCD_DATA_PINS = [
-    LCD_D7, LCD_D6, LCD_D5,
-    LCD_D4, LCD_D3, LCD_D2,
-    LCD_D1, LCD_D0
+    LCD_D0, LCD_D1, LCD_D2,
+    LCD_D3, LCD_D4, LCD_D5,
+    LCD_D6, LCD_D7
     ]
 
 # Define LCD commands (2004A)
@@ -91,9 +91,9 @@ LCD_SET_DDRAM = 0x80
 
 # Define LCD DDRAM lines
 LCD_LINE_1 = 0x00
-LCD_LINE_2 = 0x14
-LCD_LINE_3 = 0x28
-LCD_LINE_4 = 0x3C
+LCD_LINE_2 = 0x40
+LCD_LINE_3 = 0x14
+LCD_LINE_4 = 0x54
 
 # Define LCD Styles
 RIGHT_JUSTIFIED = 0
@@ -128,16 +128,20 @@ def main():
 
         # Send some centred test
         lcd_string("--------------------", LCD_LINE_1, CENTERED)
-        lcd_string("Rasbperry Pi", LCD_LINE_2, RIGHT_JUSTIFIED)
-        lcd_string("Model B", LCD_LINE_3, RIGHT_JUSTIFIED)
+        lcd_string("Mexican Water!", LCD_LINE_2, RIGHT_JUSTIFIED)
+        lcd_string("WOW", LCD_LINE_3, RIGHT_JUSTIFIED)
         lcd_string("--------------------", LCD_LINE_4, CENTERED)
 
         time.sleep(3)  # 3 second delay
 
-        lcd_string("Raspberrypi-spy", LCD_LINE_1, LEFT_JUSTIFIED)
-        lcd_string(".co.uk", LCD_LINE_2, LEFT_JUSTIFIED)
+
+	# Blank display
+	lcd_byte(LCD_BLANK, LCD_RS_CMD)
+
+        lcd_string("WAHOO HOLLY", LCD_LINE_1, LEFT_JUSTIFIED)
+        lcd_string("YEYEYEYEYEYE", LCD_LINE_2, LEFT_JUSTIFIED)
         lcd_string("", LCD_LINE_3, LEFT_JUSTIFIED)
-        lcd_string("20x4 LCD Module Test", LCD_LINE_4, LEFT_JUSTIFIED)
+        lcd_string("Very LCD", LCD_LINE_4, LEFT_JUSTIFIED)
 
         time.sleep(3)  # 20 second delay
 
@@ -154,19 +158,19 @@ def lcd_init():
     lcd_byte(
         LCD_CURSOR  # Select cursor options
         | CURSOR_RIGHT,  # Set cursor motion to right to left
-        LCD_RS_CMD)  # 00000110 Cursor move direction
+        LCD_RS_CMD)  # Send byte as command
     lcd_byte(
         LCD_DISPLAY  # Select display options
         | DISPLAY_ON  # Turn display on
-        | DISPLAY_CURSOR_ON  # Turn cursor on
+        | DISPLAY_CURSOR_OFF  # Turn cursor on
         | DISPLAY_CURSOR_SOLID,  # Turn cursor blink off
         LCD_RS_CMD  # Send byte as command
         )
     lcd_byte(
         LCD_FUNCTION_SET  # Select function
         | FUNCTION_8_BIT  # Set MPL mode to 8 bit
-        | FUNCTION_5X11_FONT  # Set font to 5x11 dots
-        | FUNCTION_1_LINE_DISPLAY,  # Set MPL to single line format
+        | FUNCTION_5X11_FONT  # Set font to 5x11 dots (doesn't matter if double line format)
+        | FUNCTION_2_LINE_DISPLAY,  # Set MPL to double line format
         LCD_RS_CMD  # Send byte as command
         )
     lcd_byte(LCD_BLANK, LCD_RS_CMD)  # 00000001 Clear display
@@ -185,6 +189,7 @@ def lcd_byte(bits, mode):
     time.sleep(E_DELAY)
     for index, pin in enumerate(LCD_DATA_PINS):
         GPIO.output(pin, get_bit(bits, index))
+	print("setting pin " + str(pin) + " to " + str(get_bit(bits,index)))
         time.sleep(E_DELAY)
     pulse_enable()
     time.sleep(E_DELAY)
@@ -226,10 +231,10 @@ def lcd_string(message, line, style=LEFT_JUSTIFIED):
 
     if ((style == RIGHT_JUSTIFIED) and (len(message) < LCD_WIDTH)):
         for i in range(LCD_WIDTH - len(message)):
-            lcd_byte(0, LCD_RS_CHR)
-    elif (style == CENTERED and len(line) < LCD_WIDTH):
+            lcd_byte(ord(" "), LCD_RS_CHR)
+    elif (style == CENTERED and len(message) < LCD_WIDTH):
         for i in range((LCD_WIDTH - len(message)) / 2):
-            lcd_byte(0, LCD_RS_CHR)
+            lcd_byte(ord(" "), LCD_RS_CHR)
     for i in range(min(LCD_WIDTH, len(message))):
         lcd_byte(ord(message[i]), LCD_RS_CHR)
 
