@@ -156,18 +156,17 @@ class Bartender(MenuDelegate):
         pump_opts = []
         for p in sorted(self.pump_configuration.keys()):
             config = Menu(self.pump_configuration[p]["name"])
-
-        # add fluid options for each pump
-        for opt in drink_options:
-            config.addOption(
-                MenuItem(
-                    'pump_selection',
-                    opt["name"],
-                    {"key": p, "value": opt["value"], "name": opt["name"]}
+            # add fluid options for each pump
+            for opt in drink_options:
+                config.addOption(
+                    MenuItem(
+                        'pump_selection',
+                        opt["name"],
+                        {"key": p, "value": opt["value"], "name": opt["name"]}
+                        )
                     )
-                )
-        config.setParent(configuration_menu)
-        pump_opts.append(config)
+            config.setParent(configuration_menu)
+            pump_opts.append(config)
 
         # add pump menus to the configuration menu
         configuration_menu.addOptions(pump_opts)
@@ -399,7 +398,13 @@ class Bartender(MenuDelegate):
         pumpThreads = []
 
         for ing in ingredients.keys():
+            print("Looking for pump for ingredient: " + str(ing))
+            found = False
             for pump in self.pump_configuration.keys():
+                print("Checking pump " + str(pump))
+                print(
+                    "This pump is for: "
+                    + str(self.pump_configuration[pump]["value"]))
                 if ing == self.pump_configuration[pump]["value"]:
                     waitTime = (ingredients[ing] * 1.00) / FLOW_RATE
                     # oz/(oz/sec)=sec
@@ -409,7 +414,13 @@ class Bartender(MenuDelegate):
                         target=self.pour,
                         args=(self.pump_configuration[pump]["pin"], waitTime)
                         )
+                    print(
+                        "Found pump for " + str(ing)
+                        + ". Setting up pour for " + str(waitTime) + " sec")
                     pumpThreads.append(pump_t)
+                    found = True
+            if (not found):
+                print("Could not find pump for ingredient: " + str(ing))
 
         print("Total pour time: " + str(maxTime))
 
