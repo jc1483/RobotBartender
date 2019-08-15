@@ -346,6 +346,9 @@ class Bartender(MenuDelegate):
                 if option.type == "menu_link":
                     option.setChild(pour)
 
+        # finally show the menu structure
+        self.menuContext.showMenu()
+
     def pourDrink(self, drink):
         ingredients = drink.attributes["ingredients"].copy()
 
@@ -441,8 +444,8 @@ class Bartender(MenuDelegate):
                 time.sleep(0.1)
 
         except KeyboardInterrupt:
-            self.lcdLayer.cleanup()       # clean up GPIO on CTRL+C exit
-        self.lcdLayer.cleanup()           # clean up GPIO on normal exit
+            self.lcdLayer.lcd_cleanup()       # clean up GPIO on CTRL+C exit
+        self.lcdLayer.lcd_cleanup()           # clean up GPIO on normal exit
 
         traceback.print_exc()
 
