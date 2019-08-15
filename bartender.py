@@ -283,8 +283,9 @@ class Bartender(MenuDelegate):
 
     def progressBar(self, waitTime):
         self.lcdLayer.lcd_blank()
+        self.lcdLayer.lcd_string("Pouring", LCD.LCD_LINE_1, LCD.CENTERED)
         self.lcdLayer.lcd_byte(
-            LCD.LCD_LINE_2
+            LCD.LCD_LINE_3
             | LCD.LCD_SET_DDRAM, LCD.LCD_RS_CMD)
         block = 0xff
         for i in range(20):

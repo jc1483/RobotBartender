@@ -155,7 +155,7 @@ class MenuContext(object):
         raises ValueError if parent menu is null
         """
         if (not self.currentMenu.parent):
-            raise ValueError("Cannot navigate back when parent is None")
+            print("Cannot navigate back when parent is None")
         else:
             self.setMenu(self.currentMenu.parent)
         self.showMenu()
