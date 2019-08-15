@@ -256,11 +256,11 @@ class Bartender(MenuDelegate):
     def progressBar(self, waitTime):
         self.lcdLayer.lcd_blank()
         self.lcdLayer.lcd_byte(
-            self.lcdLayer.LCD_LINE_2
-            | self.lcdLayer.LCD_SET_DDRAM, self.lcdLayer.LCD_RS_CMD)
+            LCD.LCD_LINE_2
+            | LCD.LCD_SET_DDRAM, LCD.LCD_RS_CMD)
         block = 0xff
         for i in range(20):
-            self.lcdLayer.lcd_byte(block, self.lcdLayer.LCD_RS_CHR)
+            self.lcdLayer.lcd_byte(block, LCD.LCD_RS_CHR)
             time.sleep(waitTime / 20)
         return True
 
