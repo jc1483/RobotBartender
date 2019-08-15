@@ -228,7 +228,7 @@ class Bartender(MenuDelegate):
         elif(menuItem.type == "menu_link"):
             if (menuItem.child is not None):
                 try:
-                    self.drink_attributes += menuItem.attributes
+                    self.drink_attributes.append(menuItem.attributes)
                 except TypeError:
                     print("menu item has no attributes")
                 self.menuContext.currentMenu = menuItem.child
@@ -355,7 +355,9 @@ class Bartender(MenuDelegate):
 
     def pourDrink(self, drink):
         self.running = True
-        ingredients = copy.copy(drink.attributes["ingredients"])
+        ingredients = []
+        for ing in drink.attributes["ingredients"]:
+            ingredients.append(ing)
 
         size = int(self.drink_attributes["size"].split()[0])
         strength = self.drink_attributes["strength"]
