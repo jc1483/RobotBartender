@@ -370,7 +370,6 @@ class Bartender(MenuDelegate):
         print("Size = " + str(size) + " oz")
         strength = self.drink_attributes["strength"]
         print("Strength: " + str(strength))
-        self.drink_attributes = []
         alcModifier = 1
 
         if (strength == "strong"):
@@ -385,13 +384,13 @@ class Bartender(MenuDelegate):
             for opts in drink_options:
                 if (ing == opts["value"]
                         and opts["alcohol"] == 1):
-                    ingredients[ing] = ingredients[ing] * alcModifier
+                    ingredients.update(ing, ingredients[ing] * alcModifier)
 
         print("Total parts: " + str(totalIngredients))
 
         # size calculations
         for ing in ingredients:
-            ingredients[ing] = ingredients[ing] * size / totalIngredients
+            ingredients.update(ing, ingredients[ing] * size / totalIngredients)
             print(str(ingredients[ing]) + " oz of " + str(ing))
 
         maxTime = 0
@@ -400,7 +399,7 @@ class Bartender(MenuDelegate):
         for ing in ingredients.keys():
             for pump in self.pump_configuration.keys():
                 if ing == self.pump_configuration[pump]["value"]:
-                    waitTime = ing / FLOW_RATE  # oz / (oz/sec) = sec
+                    waitTime = ingredients[ing] / FLOW_RATE  # oz / (oz/sec) = sec
                     if (waitTime > maxTime):
                         maxTime = waitTime
                     pump_t = threading.Thread(
@@ -438,6 +437,8 @@ class Bartender(MenuDelegate):
             self.menuContext.setMenu(addMenu)
         except KeyError:
             self.menuContext.setMenu(self.mainMenu)
+
+        self.drink_attributes = {}
 
     def down_btn(self, ctx):
         if not self.running:
