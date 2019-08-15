@@ -197,3 +197,6 @@ class LCDLayer(object):
                 self.lcd_byte(ord(" "), LCD_RS_CHR)
         for i in range(min(LCD_WIDTH, len(message))):
             self.lcd_byte(ord(message[i]), LCD_RS_CHR)
+
+    def lcd_cleanup(self):
+        GPIO.cleanup()

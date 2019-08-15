@@ -117,18 +117,39 @@ class Bartender(MenuDelegate):
                 MenuItem(
                     'drink',
                     o["name"],
-                    {"ingredients": {o["value"]: 1}, "strong": o["alcohol"]}
-                    )
+                    {
+                        "ingredients": {o["value"]: 1},
+                        "strong": o["alcohol"],
+                        "ice": 0
+                    }
                 )
+            )
         for d in drink_list:
-            drink_opts.append(
-                MenuItem(
-                    'drink',
-                    d["name"],
-                    {"ingredients": d["ingredients"]}
+            if d["add"] is not None:
+                drink_opts.append(
+                    MenuItem(
+                        'drink',
+                        d["name"],
+                        {
+                            "ingredients": d["ingredients"],
+                            "strong": d["strong"],
+                            "add": d["add"],
+                            "ice": d["ice"]
+                        }
                     )
                 )
-
+            else:
+                drink_opts.append(
+                    MenuItem(
+                        'drink',
+                        d["name"],
+                        {
+                            "ingredients": d["ingredients"],
+                            "strong": d["strong"],
+                            "ice": d["ice"]
+                        }
+                    )
+                )
         configuration_menu = Menu("Configure")
 
         # add pump configuration options
@@ -417,8 +438,8 @@ class Bartender(MenuDelegate):
                 time.sleep(0.1)
 
         except KeyboardInterrupt:
-            GPIO.cleanup()       # clean up GPIO on CTRL+C exit
-        GPIO.cleanup()           # clean up GPIO on normal exit
+            self.lcdLayer.cleanup()       # clean up GPIO on CTRL+C exit
+        self.lcdLayer.cleanup()           # clean up GPIO on normal exit
 
         traceback.print_exc()
 
