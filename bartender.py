@@ -11,16 +11,16 @@ from drinks import drink_list, drink_options
 GPIO.setmode(GPIO.BCM)
 
 LEFT_BTN_PIN = 12
-LEFT_PIN_BOUNCE = 300
+LEFT_PIN_BOUNCE = 500
 
 RIGHT_BTN_PIN = 16
-RIGHT_PIN_BOUNCE = 300
+RIGHT_PIN_BOUNCE = 500
 
 UP_BTN_PIN = 21
-UP_PIN_BOUNCE = 100
+UP_PIN_BOUNCE = 500
 
 DOWN_BTN_PIN = 20
-DOWN_PIN_BOUNCE = 300
+DOWN_PIN_BOUNCE = 500
 
 FLOW_RATE = 60.0/100.0  # oz per second
 
@@ -226,7 +226,10 @@ class Bartender(MenuDelegate):
             return True
         elif(menuItem.type == "menu_link"):
             if (menuItem.child is not None):
-                self.drink_attributes += menuItem.attributes
+                try:
+                    self.drink_attributes += menuItem.attributes
+                except TypeError:
+                    print("menu item has no attributes")
                 self.menuContext.currentMenu = menuItem.child
                 self.menuContext.showMenu()
                 return True

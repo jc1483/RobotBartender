@@ -108,8 +108,8 @@ LCD_E_ENABLE = True
 LCD_E_DISABLE = False
 
 # Timing constants
-E_PULSE = 0.0005
-E_DELAY = 0.0005
+E_PULSE = 0.001
+E_DELAY = 0.001
 
 
 class LCDLayer(object):
