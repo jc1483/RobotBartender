@@ -374,16 +374,16 @@ class Bartender(MenuDelegate):
         # strength calculations
         totalIngredients = 0
         for ing in ingredients:
-            totalIngredients += ing.value
+            totalIngredients += ingredients[ing]
             for opts in drink_options:
-                if (ing.key == opts.attributes["value"]
+                if (ing == opts.attributes["value"]
                         and opts.attributes["alcohol"] == 1):
-                    ing.value = ing.value * alcModifier
+                    ingredients[ing] = ingredients[ing] * alcModifier
 
         # size calculations
         totalIngredients = 0
         for ing in ingredients:
-            ing = ing.value * size / totalIngredients
+            ingredients[ing] = ingredients[ing] * size / totalIngredients
 
         maxTime = 0
         pumpThreads = []
