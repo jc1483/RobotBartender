@@ -11,16 +11,16 @@ from drinks import drink_list, drink_options
 GPIO.setmode(GPIO.BCM)
 
 LEFT_BTN_PIN = 12
-LEFT_PIN_BOUNCE = 100
+LEFT_PIN_BOUNCE = 300
 
 RIGHT_BTN_PIN = 16
-RIGHT_PIN_BOUNCE = 100
+RIGHT_PIN_BOUNCE = 300
 
 UP_BTN_PIN = 21
 UP_PIN_BOUNCE = 100
 
 DOWN_BTN_PIN = 20
-DOWN_PIN_BOUNCE = 100
+DOWN_PIN_BOUNCE = 300
 
 FLOW_RATE = 60.0/100.0  # oz per second
 
@@ -219,7 +219,7 @@ class Bartender(MenuDelegate):
             self.menuContext.retreat()
             return True
         elif(menuItem.type == "pour"):
-            self.pourDrink(menuItem.drink)
+            self.pourDrink(menuItem)
             return True
         elif(menuItem.type == "clean"):
             self.clean()
