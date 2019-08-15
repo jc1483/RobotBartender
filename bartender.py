@@ -220,7 +220,7 @@ class Bartender(MenuDelegate):
             self.menuContext.retreat()
             return True
         elif(menuItem.type == "pour"):
-            self.pourDrink(menuItem)
+            self.pourDrink()
             return True
         elif(menuItem.type == "clean"):
             self.clean()
@@ -340,7 +340,8 @@ class Bartender(MenuDelegate):
             addIce = Menu("Add Ice")
             addIce.setParent(sizeSelect)
             pour.setParent(addIce)
-            addIce.addOption(MenuLink("Continue", addIce, pour))
+            addIce.addOption(MenuLink(
+                "Continue", addIce, pour, drink.attributes["ingredients"]))
             for option in sizeSelect.options:
                 if option.type == "menu_link":
                     option.setChild(addIce)
@@ -353,10 +354,10 @@ class Bartender(MenuDelegate):
         # finally show the menu structure
         self.menuContext.showMenu()
 
-    def pourDrink(self, drink):
+    def pourDrink(self):
         self.running = True
         ingredients = []
-        for ing in drink.attributes["ingredients"]:
+        for ing in self.drink_attributes["ingredients"]:
             ingredients.append(ing)
 
         size = int(self.drink_attributes["size"].split()[0])
